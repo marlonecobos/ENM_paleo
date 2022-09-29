@@ -9,7 +9,7 @@ mammothOccurrences <-  pbdb_occurrences (limit="all",
                                          show=c("coords", "phylo", "ident"))
 
 # Filter records for Unique occurrences and relevant columns
-mammothOccurrences <- mammothOccurrences %>% select("taxon_name", "lng", "lat", "early_age", "late_age") %>% unique()
+mammothOccurrencesClean <- mammothOccurrences %>% select("taxon_name", "lng", "lat", "early_age", "late_age") %>% unique()
 mammothOccurrencesClean[,c("lng", "lat", "early_age", "late_age")] <- as.numeric(unlist(mammothOccurrencesClean[,c("lng", "lat", 
                                                                                                                    "early_age", 
                                                                                                                    "late_age")]))
@@ -34,14 +34,17 @@ for(i in 1:nrow(mammothOccurrencesClean)){
 
 # How do the data look now?
 ncolors <- length(unique(mammothOccurrencesClean$timeIndex))
-rbPal <- colorRampPalette(c('red','yellow', 'blue'))
+rbPal <- colorRampPalette(c("#FFFFD4", "#FED98E", "#FE9929","#CC4C02"))
 mammothOccurrencesClean$Col <- rbPal(ncolors)[mammothOccurrencesClean$timeIndex]
 
 plot(mammothOccurrencesClean[,c("lng","lat")], main = "All Mammoth Points by Date", 
-     xlab = "Longitude", ylab = "Latitude", col = mammothOccurrencesClean$Col, pch = 20,)
-legend("topleft",title="Date (My)",legend=relevantTimeSlices$meanAge[sort(unique(mammothOccurrencesClean$timeIndex))],
-       col =rbPal(ncolors),pch=20)
-plot(gshhs, add = T)
+     xlab = "Longitude", ylab = "Latitude", col = mammothOccurrencesClean$Col, pch = ".", 
+     cex.lab = 1.5, cex.axis = 1.5, cex.main = 2)
+plot(gshhs, col = "gray", add = T)
+points(mammothOccurrencesClean[,c("lng","lat")], bg = mammothOccurrencesClean$Col, 
+     pch = 21, cex = 1.5)
+legend("topleft",title="Date (My)", legend=relevantTimeSlices$meanAge[sort(unique(mammothOccurrencesClean$timeIndex))],
+       fill = rbPal(ncolors), cex = 1.5, bg = "white")
 
 for (i in 1:length(relevantTimeSlices$meanAge)){
   tmp <- mammothOccurrencesClean[mammothOccurrencesClean$timeSlice == relevantTimeSlices$meanAge[i],-8:-9]
