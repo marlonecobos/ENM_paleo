@@ -29,20 +29,15 @@ if (!require("paleobioDB")) {
   Sys.sleep(2)
   library(paleobioDB)
 }
-if (!require("geodata")) {
-  install.packages("geodata")
-  Sys.sleep(2)
-  library(geodata)
-}
-if (!require("rangemap")) {
-  install.packages("rangemap")
-  Sys.sleep(2)
-  library(rangemap)
-}
 if (!require("ellipsenm")) { # it may be tricky (requires compilation tools)
   remotes::install_github("marlonecobos/ellipsenm")
   Sys.sleep(2)
   library(ellipsenm)
+}
+if (!require("spThin")) {
+  install.packages("spThin")
+  Sys.sleep(2)
+  library(spThin)
 }
 
 library(raster)
@@ -163,18 +158,8 @@ legend("bottomleft", title = "Date (My)", col = col_pal(ncolors), pch = 20,
 
 
 # writing data to directory
-## all data 
 write.csv(mammoth_oc, file = "Occurrence_data/mammut_americanum_all.csv", 
           row.names = FALSE)
-
-## data by time slices 
-mammoth_oc_split <- split(mammoth_oc, f = as.factor(mammoth_oc$time_slice))
-
-for (i in 1:length(mammoth_oc_split)) {
-  slice <- names(mammoth_oc_split)[i]
-  fname <- paste0("Occurrence_data/mammut_americanum_", slice, "mya.csv")
-  write.csv(mammoth_oc_split[[i]], file = fname, row.names = FALSE)
-}
 # ------------------------------------------------------------------------------
 
 
@@ -301,5 +286,66 @@ for (i in 1:length(vars_keep)) {
   writeRaster(acces_hs1[[i]], filename = rnames[[2]][i], format = "GTiff")
   writeRaster(var_mis19[[i]], filename = rnames[[3]][i], format = "GTiff")
   writeRaster(var_hs1[[i]], filename = rnames[[4]][i], format = "GTiff")
+}
+# ------------------------------------------------------------------------------
+
+
+# More data cleaning and spatial thinning --------------------------------------
+## data split by time slices 
+mammoth_oc_split <- split(mammoth_oc, f = as.factor(mammoth_oc$time_slice))
+
+# check records outside raster layers
+## records 0.787 mya
+outside_mis19 <- which(is.na(extract(var_mis19[[1]], 
+                                     mammoth_oc_split$`0.787`[, 2:3])))
+
+outside_mis19 # all OK
+
+## records 0.015 mya
+outside_hs1 <- which(is.na(extract(var_hs1[[1]], 
+                                     mammoth_oc_split$`0.01585`[, 2:3])))
+
+outside_hs1 # one is outside
+
+## checking weird record
+x11()
+plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
+     main = "Records with no data")
+points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
+
+plot(variables$pleistocene_hs1$bio_1, xlim = c(-73, -72), ylim = c(39, 40),
+     main = "Records with no data")
+points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
+
+## correcting manually that record (if many records are outside, the process
+## will be longer, but see ellipsenm::to_closest())
+mammoth_oc_split$`0.01585`[outside_hs1, 2:3] <- c(-72.55, 39.55)
+
+## plotting point again to check
+points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 1, cex = 1)
+
+
+# Spatial thinning (geographic rarefaction of records to reduce autocorrelation)
+## records 0.787 mya
+thin(mammoth_oc_split$`0.787`, lat.col = "lat", 
+     long.col = "lng", spec.col = "taxon_name", 
+     thin.par = 30, reps = 10, write.files = TRUE, 
+     max.files = 1, out.dir = "Occurrence_data", 
+     locs.thinned.list.return = FALSE, out.base = "oc_msi19")
+
+## records 0.015 mya
+thin(mammoth_oc_split$`0.01585`, lat.col = "lat", 
+     long.col = "lng", spec.col = "taxon_name", 
+     thin.par = 30, reps = 10, write.files = TRUE, 
+     max.files = 1, out.dir = "Occurrence_data", 
+     locs.thinned.list.return = FALSE, out.base = "oc_hs1")
+
+
+# writing clean data
+## all time slices before thinning
+for (i in 1:length(mammoth_oc_split)) {
+  slice <- names(mammoth_oc_split)[i]
+  fname <- paste0("Occurrence_data/mammut_americanum_", slice, "mya.csv")
+  write.csv(mammoth_oc_split[[i]], file = fname, row.names = FALSE)
 }
 # ------------------------------------------------------------------------------
