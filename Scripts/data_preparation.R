@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Course: ECOLOGICAL MODELS APPLIED TO FOSIL DATA: DATA PREPARATION
 # Author: Marlon E. Cobos, Hannah L. Owens
-# Date: 04/10/2022
+# Date modified: 05/10/2022
 # ------------------------------------------------------------------------------
 
 
@@ -18,28 +18,17 @@
 
 
 # R packages needed ------------------------------------------------------------
-# these lines load packages (if needed packages are installed first)
-if (!require("remotes")) {
-  install.packages("remotes")
-  Sys.sleep(2)
-  library(remotes)
-}
-if (!require("paleobioDB")) {
-  install.packages("paleobioDB")
-  Sys.sleep(2)
-  library(paleobioDB)
-}
-if (!require("ellipsenm")) { # it may be tricky (requires compilation tools)
-  remotes::install_github("marlonecobos/ellipsenm")
-  Sys.sleep(2)
-  library(ellipsenm)
-}
-if (!require("spThin")) {
-  install.packages("spThin")
-  Sys.sleep(2)
-  library(spThin)
-}
+# these lines load packages 
 
+## if needed, install packages (remotes, paleobioDB, spThin) using 
+## install.packages("package_name")
+## ellipsenm is on GitHub so install it as 
+## remotes::install_github("marlonecobos/ellipsenm"). 
+## https://github.com/marlonecobos/ellipsenm/#installing-the-package
+
+library(paleobioDB)
+library(ellipsenm)
+library(spThin)
 library(raster)
 # ------------------------------------------------------------------------------
 
@@ -49,11 +38,12 @@ library(raster)
 setwd("YOUR/DIRECTORY")
 
 ## sub-directory for occurrence data
-if(!file.exists("Occurrence_data")){
+if (!dir.exists("Occurrence_data")) {
   dir.create("Occurrence_data")
 }
+
 ## sub-directory for environmental data
-if(!file.exists("Environmental_data")){
+if (!dir.exists("Environmental_data")) {
   dir.create("Environmental_data")
 }
 # ------------------------------------------------------------------------------
@@ -116,7 +106,6 @@ lims <- lims * matrix(c(1.1, 0.9, 0.9, 1.1), nrow = 2)
 lims
 
 ## raster layer 
-
 plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2], 
      main = "All Mammoth Points") 
 
@@ -159,9 +148,11 @@ legend("bottomleft", title = "Date (My)", col = col_pal(ncolors), pch = 20,
        legend = time_slices$meanAge[sort(indexes)], bt = "n", cex = 0.8)
 
 
-# writing data to directory
-write.csv(mammoth_oc, file = "Occurrence_data/mammut_americanum_all.csv", 
-          row.names = FALSE)
+# write data to directory
+fname_all <- "Occurrence_data/mammut_americanum_all.csv"
+if (!file.exists(fname_all)) {
+  write.csv(mammoth_oc, file = fname_all, row.names = FALSE)  
+}
 # ------------------------------------------------------------------------------
 
 
@@ -188,7 +179,7 @@ variables <- lapply(1:length(periods), function(x) {
   }
   
   dfol <- paste0("Environmental_data/", pname, "_bio") # folder to unzip data
-  if(!file.exists(dfol)){
+  if (!dir.exists(dfol)) {
     dir.create(dfol)
   }
   unzip(zipfile = dfile, exdir = dfol) # unzip
@@ -280,7 +271,7 @@ dirs <- c("accessible_area_mis19", "accessible_area_hs1", "relevant_area_mis19",
 
 rnames <- lapply(dirs, function (x) {
   cal_dir <- paste0("Environmental_data/", x)
-  if(!file.exists(cal_dir)){
+  if (!dir.exists(cal_dir)) {
     dir.create(cal_dir)
   }
   paste0(cal_dir, "/", vars_keep, ".tif")
@@ -314,7 +305,6 @@ outside_hs1 <- which(is.na(extract(var_hs1[[1]],
 outside_hs1 # one is outside
 
 ## checking weird record
-
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Records with no data")
 points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
@@ -352,6 +342,9 @@ thin(mammoth_oc_split$`0.01585`, lat.col = "lat",
 for (i in 1:length(mammoth_oc_split)) {
   slice <- names(mammoth_oc_split)[i]
   fname <- paste0("Occurrence_data/mammut_americanum_", slice, "mya.csv")
-  write.csv(mammoth_oc_split[[i]], file = fname, row.names = FALSE)
+  
+  if (!file.exists(fname)) {
+    write.csv(mammoth_oc_split[[i]], file = fname, row.names = FALSE)
+  }
 }
 # ------------------------------------------------------------------------------
