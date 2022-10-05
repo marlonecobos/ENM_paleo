@@ -61,7 +61,7 @@ if(!file.exists("Environmental_data")){
 
 # Getting occurrence data ------------------------------------------------------
 # search for occurrences
-mammoth_oc <-  pbdb_occurrences (limit = "all", base_name = "Mammut americanum", 
+mammoth_oc <- pbdb_occurrences (limit = "all", base_name = "Mammut americanum", 
                                 vocab = "pbdb", interval = "Quaternary",
                                 show = c("coords", "phylo", "ident"))
 
@@ -88,7 +88,7 @@ str(mammoth_oc)
 ## this fixes the issue of all columns with character info
 numeric_info <- as.numeric(unlist(mammoth_oc[, c("lng", "lat", "early_age", 
                                                  "late_age")]))
-## put corrected info back with in the main table
+## put corrected info back within the main table
 mammoth_oc[, c("lng", "lat", "early_age", "late_age")] <- numeric_info
 
 
@@ -96,7 +96,7 @@ mammoth_oc[, c("lng", "lat", "early_age", "late_age")] <- numeric_info
 ## all names in the column of species name
 table(mammoth_oc$taxon_name)
 
-## “cf” basically means “I’m not sure, the preservation isn’t that great
+## “cf” basically means “I’m not sure, the preservation isn’t that great"
 ## exclude that one
 mammoth_oc <- mammoth_oc[mammoth_oc$taxon_name != "Mammut cf. americanum", ]
 
@@ -116,7 +116,7 @@ lims <- lims * matrix(c(1.1, 0.9, 0.9, 1.1), nrow = 2)
 lims
 
 ## raster layer 
-x11()
+
 plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2], 
      main = "All Mammoth Points") 
 
@@ -144,7 +144,7 @@ for (i in 1:nrow(mammoth_oc)) {
 }
 
 
-# plot to check how the data look like now
+# plot to visualize data
 ## define colors
 indexes <- unique(mammoth_oc$time_index)
 ncolors <- length(indexes)
@@ -152,7 +152,6 @@ col_pal <- colorRampPalette(c('red','yellow', 'blue'))
 mammoth_oc$col <- col_pal(ncolors)[as.factor(mammoth_oc$time_index)]
 
 ## plot with legend
-x11()
 plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "All Mammoth Points by Date", col = "#D6D5D5") 
 points(mammoth_oc[, c("lng","lat")], col = mammoth_oc$col, pch = 20)
@@ -183,11 +182,15 @@ variables <- lapply(1:length(periods), function(x) {
   pname <- names(periods)[x] # name of periods
   dfile <- paste0("Environmental_data/", pname, "_bio.zip") # name downloaded file
   
-  download.file(periods[x], destfile = dfile, method = "auto", # download
-                quiet = FALSE, mode = "wb", cacheOK = TRUE)
+  if(!file.exists(dfile)){ # Checks to see if data is already present before download
+    download.file(periods[x], destfile = dfile, method = "auto", # download
+                  quiet = FALSE, mode = "wb", cacheOK = TRUE)
+  }
   
   dfol <- paste0("Environmental_data/", pname, "_bio") # folder to unzip data
-  dir.create(dfol)
+  if(!file.exists(dfol)){
+    dir.create(dfol)
+  }
   unzip(zipfile = dfile, exdir = dfol) # unzip
   
   files <- list.files(dfol, pattern = ".tif$", full.names = TRUE, 
@@ -202,10 +205,11 @@ names(variables) <- names(periods) # name for variable sets
 sapply(variables, names)
 
 ## simple plot
-x11()
 par(mfrow = c(2, 1))
-plot(variables$pleistocene_mis19$bio_1) 
-plot(variables$pleistocene_hs1$bio_1) 
+plot(variables$pleistocene_mis19$bio_1, 
+     main = "Annual Mean Temperature (C * 10),\nPleistocene MIS, ca. 787 ka") 
+plot(variables$pleistocene_hs1$bio_1,
+     main = "Annual Mean Temperature (C * 10),\nPleistocene Heinrich Stadial 1 (17.0-14.7 ka)")
 # ------------------------------------------------------------------------------
 
 
@@ -219,7 +223,7 @@ match_var <- match(names(variables$pleistocene_mis19),
 vars_keep <- names(variables$pleistocene_hs1)[match_var]
 vars_keep
 
-vars_keep <- vars_keep[c(1, 12:14, 2:11)]
+vars_keep <- vars_keep[c(1, 12:14, 2:11)] # Sorts numerically instead of alphabetically
 vars_keep
 
 ## filtering variables in stacks
@@ -233,7 +237,6 @@ cal_area <- concave_area(data = mammoth_oc, longitude = "lng",
                          latitude = "lat", buffer_distance = 500)
 
 ## simple plot
-x11()
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Calibration area (acccessible area)")
 points(mammoth_oc[, 2:3], pch = 16, cex = 0.3)
@@ -248,13 +251,12 @@ cal_area_15 <- concave_area(data = mammoth_oc_split$`0.01585`, longitude = "lng"
                             latitude = "lat", buffer_distance = 500)
 
 ## simple plots
-x11()
 plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Calibration area ~787 mya")
 points(mammoth_oc_split$`0.787`[, 2:3], pch = 16, cex = 0.3)
 plot(cal_area_787, border = "blue", lwd = 2, add = TRUE)
 
-x11()
+
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Calibration area ~0.015 mya")
 points(mammoth_oc_split$`0.01585`[, 2:3], pch = 16, cex = 0.3)
@@ -278,8 +280,9 @@ dirs <- c("accessible_area_mis19", "accessible_area_hs1", "relevant_area_mis19",
 
 rnames <- lapply(dirs, function (x) {
   cal_dir <- paste0("Environmental_data/", x)
-  dir.create(cal_dir)
-  
+  if(!file.exists(cal_dir)){
+    dir.create(cal_dir)
+  }
   paste0(cal_dir, "/", vars_keep, ".tif")
 }) 
 
@@ -311,7 +314,7 @@ outside_hs1 <- which(is.na(extract(var_hs1[[1]],
 outside_hs1 # one is outside
 
 ## checking weird record
-x11()
+
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Records with no data")
 points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
