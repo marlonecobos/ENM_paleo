@@ -49,10 +49,13 @@ library(raster)
 setwd("YOUR/DIRECTORY")
 
 ## sub-directory for occurrence data
-dir.create("Occurrence_data")
-
+if(!file.exists("Occurrence_data")){
+  dir.create("Occurrence_data")
+}
 ## sub-directory for environmental data
-dir.create("Environmental_data")
+if(!file.exists("Environmental_data")){
+  dir.create("Environmental_data")
+}
 # ------------------------------------------------------------------------------
 
 
@@ -65,7 +68,7 @@ mammoth_oc <-  pbdb_occurrences (limit = "all", base_name = "Mammut americanum",
 # info in downloaded data
 colnames(mammoth_oc)
 
-# filter records for Unique occurrences and relevant columns
+# filter records for unique occurrences and relevant columns
 ## info to keep 
 selected <- c("taxon_name", "lng", "lat", "early_age", "late_age") 
 
