@@ -18,12 +18,12 @@
 
 
 # R packages needed ------------------------------------------------------------
-# these lines load packages 
+# the next lines of code load packages 
 
-## if needed, install packages (remotes, paleobioDB, spThin) using 
+## if needed, install packages (remotes, paleobioDB, spThin, raster) using 
 ## install.packages("package_name")
 ## ellipsenm is on GitHub so install it as 
-## remotes::install_github("marlonecobos/ellipsenm"). 
+## remotes::install_github("marlonecobos/ellipsenm") 
 ## https://github.com/marlonecobos/ellipsenm/#installing-the-package
 
 library(paleobioDB)
