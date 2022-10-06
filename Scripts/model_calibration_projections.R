@@ -161,7 +161,6 @@ plot(mod_msi19, main = "Suitability for Mammoth\nPleistocene MIS (ca. 787 ka)")
 points(oc_msi19[, 2:3], pch = 16, cex = 0.4)
 plot(mod_hs1, main = "Suitability for Mammoth\nPleistocene HS 1 (17.0-14.7 ka)")
 points(oc_hs1[, 2:3], pch = 16, cex = 0.4)
-
 # ------------------------------------------------------------------------------
 
 
@@ -210,37 +209,56 @@ mop_msi19 <- mop(m = back, g = pcs$PCRasters_Projected_PCs, mop_type = type_mop,
 
 
 # Plots of extrapolation risk analyses -----------------------------------------
+# just as a remainder, we calibrated models using data and a background from HS1
+# models were projected to the whole accessible area for periods HS1 and MSI19
+
 # MESS results
+## dissimilarity
 novel_hs1 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_0_hs1_novel.asc")
 novel_msi19 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_0_msi19_novel.asc") 
 
+## novel conditions
 nov_lim_hs1 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_0_hs1_novel_limiting.asc")
 nov_lim_msi19 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_0_msi19_novel_limiting.asc") 
 
-plot(novel_hs1)
-plot(novel_msi19)
-
-plot(nov_lim_hs1, col = c("orange", "red", "white"))
-plot(nov_lim_msi19, col = c("orange", "red", "white"))
-
-
-# results from kuenm MOP
+# results from kuenm MOP (similarity and novel conditions)
 kuenm_mop_hs1 <- raster("ENM/MOP_results/Set_4/MOP_5%_hs1.tif")
 kuenm_mop_msi19 <- raster("ENM/MOP_results/Set_4/MOP_5%_msi19.tif") 
 
-plot(kuenm_mop_hs1)
-plot(kuenm_mop_msi19)
+# plots of results uncertainty analyses
+## dissimilarity results
+par(mfrow = c(2, 3))
 
-# more detailed MOP results
-plot(mop_hs1$mop_basic)
-plot(mop_hs1$mop_simple, col = c("orange", "red"))
-plot(mop_hs1$mop_detailed$towards_low_end, col = "blue")
-plot(mop_hs1$mop_detailed$towards_high_end, col = "red")
+plot(novel_msi19, main = "MESS\nMIS (ca. 787 ka)")
+plot(1 - kuenm_mop_msi19, main = "kuenm MOP\nMIS (ca. 787 ka)")
+plot(mop_msi19$mop_basic, main = "New MOP\nMIS (ca. 787 ka)")
 
+plot(novel_hs1, main = "HS 1 (17.0-14.7 ka)")
+plot(1 - kuenm_mop_hs1, main = "HS 1 (17.0-14.7 ka)")
+plot(mop_hs1$mop_basic, main = "HS 1 (17.0-14.7 ka)")
 
-plot(mop_msi19$mop_basic)
-plot(mop_msi19$mop_simple, col = c("orange", "red"))
+## novel conditions
+par(mfrow = c(2, 3))
+
+plot(nov_lim_msi19, col = c("orange", "red", "white"), 
+     main = "MESS\nMIS (ca. 787 ka)")
+plot(kuenm_mop_msi19 == 0, col = c("white", "red"), 
+     main = "kuenm MOP\nMIS (ca. 787 ka)")
+plot(mop_msi19$mop_simple, col = c("orange", "red"), 
+     main = "New MOP\nMIS (ca. 787 ka)")
+
+plot(nov_lim_hs1, col = c("orange", "red", "white"), 
+     main = "HS 1 (17.0-14.7 ka)")
+plot(kuenm_mop_hs1 == 0, col = c("white", "red"), main = "HS 1 (17.0-14.7 ka)")
+plot(mop_hs1$mop_simple, col = c("orange", "red"), main = "HS 1 (17.0-14.7 ka)")
+
+## novel conditions towards specific end of variables (derived from new MOP)
+### MSI 
 plot(mop_msi19$mop_detailed$towards_low_end, col = "blue")
 plot(mop_msi19$mop_detailed$towards_high_end, col = "red")
+
+### HS1
+plot(mop_hs1$mop_detailed$towards_low_end, col = "blue")
+plot(mop_hs1$mop_detailed$towards_high_end, col = "red")
 # ------------------------------------------------------------------------------
 
