@@ -46,6 +46,11 @@ Information is organized in folders that contain data and commented R scripts, a
     - Model calibration (model selection) 
     - Model projections
     - Uncertainty analysis (MESS, MOP)
+    
+- <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Scripts/model_evaluation.R" target="_blank">Model evaluation</a>
+    - Variable importance (contribution to models)
+    - Thresholding results
+    - Statistical significance, fitting, and complexity 
 
 - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Scripts/model_comparisons.R" target="_blank">Model comparisons</a>
     - Suitable areas in projections
