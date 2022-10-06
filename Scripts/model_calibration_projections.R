@@ -253,7 +253,7 @@ plot(kuenm_mop_hs1 == 0, col = c("white", "red"), main = "HS 1 (17.0-14.7 ka)")
 plot(mop_hs1$mop_simple, col = c("orange", "red"), main = "HS 1 (17.0-14.7 ka)")
 
 ## novel conditions towards specific end of variables (derived from new MOP)
-### MSI 
+### MIS 
 plot(mop_msi19$mop_detailed$towards_low_end, col = "blue")
 plot(mop_msi19$mop_detailed$towards_high_end, col = "red")
 
