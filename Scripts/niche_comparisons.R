@@ -32,34 +32,16 @@ library(ellipsenm)
 
 
 # Extent of suitable habitat in projections ------------------------------------
-# we calibrated models using data and a background from HS1
-# models were projected to the whole accessible area for periods HS1 and MSI19
+# we thresholded suitability layers for the periods HS1 and MSI19
 
-# data
-## records with suitability values
-occ_suit <- read.csv("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_0_samplePredictions.csv")
-
-## raster layers (median projections of replicated final model)
-mod_hs1 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_hs1_median.asc")
-mod_msi19 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_msi19_median.asc")
-
-# determine threshold values
-## minimum training presence
-mtp_thres <- min(occ_suit$Cloglog.prediction)
-
-## modified threshold (E = 5% omission)
-e5_n <- nrow(occ_suit) * 0.05
-e5_n <- ceiling(e5_n) + 1# many people do not sum 1 
-e5_thres <- sort(occ_suit$Cloglog.prediction)[e5_n]
-
-# threshold suitability layers
+# read thresholded suitability layers
 ## minimum training presence threshold
-mod_hs1_mtp <- mod_hs1 >= mtp_thres
-mod_msi9_mtp <- mod_msi19 >= mtp_thres
+mod_hs1_mtp <- raster("ENM/Thresholded/med_hs1_mtp.tif")
+mod_msi9_mtp <- raster("ENM/Thresholded/med_msi9_mtp.tif")
 
 ## modified threshold (E = 5% omission)
-mod_hs1_e5 <- mod_hs1 >= e5_thres
-mod_msi9_e5 <- mod_msi19 >= e5_thres
+mod_hs1_e5 <- raster("ENM/Thresholded/med_hs1_e5%.tif")
+mod_msi9_e5 <- raster("ENM/Thresholded/med_msi9_e5%.tif")
 
 # area calculation
 ## minimum training presence threshold
@@ -93,14 +75,45 @@ area_hs1_e5 <- sum(area_hs1_e5[][mod_hs1_e5_suit[] == 1], na.rm = TRUE)
 area_msi9_e5 <- sum(area_msi9_e5[][mod_msi9_e5_suit[] == 1], na.rm = TRUE)
 
 
+# write results
+## directory for results
+thres_dir <- "ENM/Thresholded"
+
+if (!dir.exists(thres_dir)) {
+  dir.create(thres_dir)
+}
+
+## write raster layers
+writeRaster(mod_hs1_mtp_suit, format = "GTiff",
+            filename = paste0(thres_dir, "/med_hs1_mtp_suitable.tif"))
+writeRaster(mod_hs1_e5_suit, format = "GTiff",
+            filename = paste0(thres_dir, "/med_hs1_e5%_suitable.tif"))
+writeRaster(mod_msi9_mtp_suit, format = "GTiff",
+            filename = paste0(thres_dir, "/med_msi9_mtp_suitable.tif"))
+writeRaster(mod_msi9_e5_suit, format = "GTiff",
+            filename = paste0(thres_dir, "/med_msi9_e5%_suitable.tif"))
+
+## table with areas
+areas <- data.frame(HS1_mtp_area_km2 = area_hs1_mtp, 
+                    MIS_mtp_area_km2 = area_msi9_mtp,
+                    HS1_e5_area_km2 = area_hs1_e5, 
+                    MIS_e5_area_km2 = area_msi9_e5)
+
+a_name <- "ENM/Thresholded/Suitable_area_km2.csv"
+
+if (!file.exists(a_name)) {
+  write.csv(areas, a_name, row.names = FALSE)
+}
+
+
 # simple plot of suitable areas
 par(mfrow = c(2, 2))
 
-plot(mod_msi9_mtp, main = "Suitable areas (MTP)\nMIS (ca. 787 ka)")
-plot(mod_msi9_e5, main = "Suitable areas (5%)\nMIS (ca. 787 ka")
+plot(mod_msi9_mtp_suit, main = "Suitable areas (MTP)\nMIS (ca. 787 ka)")
+plot(mod_msi9_e5_suit, main = "Suitable areas (5%)\nMIS (ca. 787 ka")
 
-plot(mod_hs1_mtp, main = "HS 1 (17.0-14.7 ka)")
-plot(mod_hs1_e5, main = "HS 1 (17.0-14.7 ka)")
+plot(mod_hs1_mtp_suit, main = "HS 1 (17.0-14.7 ka)")
+plot(mod_hs1_e5_suit, main = "HS 1 (17.0-14.7 ka)")
 # ------------------------------------------------------------------------------
 
 
@@ -133,6 +146,25 @@ om_oc_e5 <- oc_msi19[suitable_e5 == 0, ]
 
 ## omission rate
 or_e5 <- sum(suitable_e5 == 0) / length(suitable_e5)
+
+
+# write results
+## directory for results
+over_dir <- "Niche_comparison"
+
+if (!dir.exists(over_dir)) {
+  dir.create(over_dir)
+}
+
+## write omission rates
+ors <- data.frame(Total_records_MIS = nrow(oc_msi19), 
+                  Omission_rate_mtp = or_mtp, Omission_rate_e5 = or_e5)
+
+or_name <- paste0(over_dir, "/MIS_omitted_in_predictions_from_HS1.csv")
+
+if (!file.exists(or_name)) {
+  write.csv(ors, or_name, row.names = FALSE)
+}
 # ------------------------------------------------------------------------------
 
 
@@ -186,6 +218,15 @@ overlap_sig <- ellipsoid_overlap(niche1_msi19, niche2_hs1,
 
 summary(overlap_sig)
 
+
+# write results
+## save overlap results (easiest way to save multiple results)
+o_name <- paste0(over_dir, "/overlap.RData")
+
+if (!file.exists(o_name)) {
+  save(niche2_hs1, niche1_msi19, overlap_sig, file = o_name)
+}
+  
 
 # simple plots
 # 3D plot of niches and their overlap
