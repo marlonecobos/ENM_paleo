@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
-# Course: ECOLOGICAL MODELS APPLIED TO FOSIL DATA: MODEL CALIBRATION AND
-#         PROJECTIONS
+# Course: ECOLOGICAL MODELS APPLIED TO FOSIL DATA: MODEL CALIBRATION,
+#         PROJECTIONS, AND UNCERTAINTY
 # Author: Marlon E. Cobos, Hannah L. Owens
 # Date modified: 05/10/2022
 # ------------------------------------------------------------------------------
@@ -8,8 +8,8 @@
 
 # Description ------------------------------------------------------------------
 # This script contains code to reproduce analyses for the practical section of 
-# the course dedicated to model calibration and projections. Basic plots will be 
-# produced to check data. 
+# the course dedicated to model calibration, projections, and uncertainty. Basic 
+# plots will be produced to check results. 
 # 
 # All data required can be obtained using the code in this script. Initial data 
 # was obtained and prepared using the scrip "data_preparation.R"
@@ -149,6 +149,19 @@ kuenm_mod_swd(occ.joint = oj, back.dir = back_dir, out.eval = dir_eval,
               jackknife = jack, out.format = out_form, project = proj, 
               G.var.dir = proj_var, ext.type = extrap, write.mess = mess, 
               maxent.path = mx, out.dir = mod_dir, wait = wait)
+
+# simple plots of median results
+## read raster layers
+mod_hs1 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_hs1_median.asc")
+mod_msi19 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_msi19_median.asc")
+
+## plot
+par(mfrow = c(1, 2))
+plot(mod_msi19, main = "Suitability for Mammoth\nPleistocene MIS (ca. 787 ka)")
+points(oc_msi19[, 2:3], pch = 16, cex = 0.4)
+plot(mod_hs1, main = "Suitability for Mammoth\nPleistocene HS 1 (17.0-14.7 ka)")
+points(oc_hs1[, 2:3], pch = 16, cex = 0.4)
+
 # ------------------------------------------------------------------------------
 
 
