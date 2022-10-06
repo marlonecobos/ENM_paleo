@@ -21,7 +21,7 @@ This repository contains R scripts and materials to run examples for the course.
 
 <hr>
 
-### Infromation in this repository
+### Information in this repository
 
 Information is organized in folders that contain data and commented R scripts, as follows:
 
@@ -46,3 +46,8 @@ Information is organized in folders that contain data and commented R scripts, a
     - Model calibration (model selection) 
     - Model projections
     - Uncertainty analysis (MESS, MOP)
+
+- <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Scripts/model_comparisons.R" target="_blank">Model comparisons</a>
+    - Suitable areas in projections
+    - Predicting records with projections 
+    - Niche overlap analysis
