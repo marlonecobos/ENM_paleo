@@ -6,7 +6,7 @@ License: <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/LICENSE" t
 
 ### Description
 
-This repository contains R scripts and materials to run examples for the course. Example data can be obtained using the scripts included in this repository.
+This repository contains R scripts and materials to run examples for the 2022 Paleontological Society short course "Ecological Niche Models Applied to Fossil Data". Example data can be obtained using the scripts included in this repository.
 
 <hr>
 
@@ -26,13 +26,14 @@ This repository contains R scripts and materials to run examples for the course.
 Information is organized in folders that contain data and commented R scripts, as follows:
 
 - <a href="https://github.com/marlonecobos/ENM_paleo/tree/main/Data" target="_blank">Occurrence data</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_all.csv" target="_blank">Mammoth data</a> downloaded from <a href="https://paleobiodb.org" target="_blank">paleobiodb.org</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.00623mya.csv" target="_blank">Mammoth data (period ~0.00623 mya)</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.01585mya.csv" target="_blank">Mammoth data (period ~0.01585 mya)</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.13mya.csv" target="_blank">Mammoth data (period ~0.13 mya)</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.787mya.csv" target="_blank">Mammoth data (period ~0.787 mya)</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_3.205mya.csv" target="_blank">Mammoth data (period ~3.205 mya)</a>
-    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_3.3mya.csv" target="_blank">Mammoth data (period ~3.3 mya)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_raw.csv" target="_blank">Mastodon data (raw)</a> downloaded from <a href="https://paleobiodb.org" target="_blank">paleobiodb.org</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_all.csv" target="_blank">Complete Mastodon data (initial subset)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.00623mya.csv" target="_blank">Mastodon data (period ~0.00623 mya)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.01585mya.csv" target="_blank">Mastodon data (period ~0.01585 mya)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.13mya.csv" target="_blank">Mastodon data (period ~0.13 mya)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_0.787mya.csv" target="_blank">Mastodon data (period ~0.787 mya)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_3.205mya.csv" target="_blank">Mastodon data (period ~3.205 mya)</a>
+    - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Data/mammut_americanum_3.3mya.csv" target="_blank">Mastodon data (period ~3.3 mya)</a>
     
 - <a href="https://github.com/marlonecobos/ENM_paleo/blob/main/Scripts/data_preparation.R" target="_blank">Data preparation</a>
     - Download occurrence data
