@@ -190,9 +190,9 @@ back <- as.matrix(back[, 4:6])
 
 ## other arguments
 type_mop <- "detailed"
-dist_type <- "euclidean"
-scal <- TRUE
-cent <- TRUE
+dist_type <- "mahalanobis"
+scal <- FALSE
+cent <- FALSE
 rescal <- FALSE
 
 ## run MOP for projection to hs1
