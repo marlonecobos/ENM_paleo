@@ -20,13 +20,14 @@
 # R packages needed ------------------------------------------------------------
 # the next lines of code load packages 
 
-## if needed, install packages (remotes, paleobioDB, spThin, raster) using 
+## if needed, install packages (remotes, paleobioDB, maps, spThin, raster) using 
 ## install.packages("package_name")
 ## ellipsenm is on GitHub so install it as 
 ## remotes::install_github("marlonecobos/ellipsenm") 
 ## https://github.com/marlonecobos/ellipsenm/#installing-the-package
 
 library(paleobioDB)
+library(maps)
 library(ellipsenm)
 library(spThin)
 library(raster)
@@ -51,71 +52,78 @@ if (!dir.exists("Environmental_data")) {
 
 # Getting occurrence data ------------------------------------------------------
 # search for occurrences
-mammoth_oc <- pbdb_occurrences (limit = "all", base_name = "Mammut americanum", 
-                                vocab = "pbdb", interval = "Quaternary",
-                                show = c("coords", "phylo", "ident"))
+mastodon_oc <- pbdb_occurrences (limit = "all", base_name = "Mammut americanum", 
+                                 vocab = "pbdb", interval = "Quaternary",
+                                 show = c("coords", "phylo", "ident"))
+
+# write raw downloaded data to directory
+fname_raw <- "Occurrence_data/mammut_americanum_raw.csv"
+if (!file.exists(fname_raw)) {
+  write.csv(mastodon_oc, file = fname_raw, row.names = FALSE)  
+}
 
 # info in downloaded data
-colnames(mammoth_oc)
+colnames(mastodon_oc)
 
 # filter records for unique occurrences and relevant columns
 ## info to keep 
 selected <- c("taxon_name", "lng", "lat", "early_age", "late_age") 
 
 ## filter data to keep selected columns
-mammoth_oc <- mammoth_oc[, selected]
+mastodon_oc <- mastodon_oc[, selected]
 # ------------------------------------------------------------------------------
 
 
 # Occurrence data cleaning and filtering ---------------------------------------
 # filter to keep only unique events in the data
-mammoth_oc <- unique(mammoth_oc)
+mastodon_oc <- unique(mastodon_oc)
 
 # check what kind of data we have
-str(mammoth_oc)
+str(mastodon_oc)
 
 # some columns that should contain numeric info are in character format 
 ## this fixes the issue of all columns with character info
-numeric_info <- as.numeric(unlist(mammoth_oc[, c("lng", "lat", "early_age", 
-                                                 "late_age")]))
+numeric_info <- as.numeric(unlist(mastodon_oc[, c("lng", "lat", "early_age", 
+                                                  "late_age")]))
 ## put corrected info back within the main table
-mammoth_oc[, c("lng", "lat", "early_age", "late_age")] <- numeric_info
+mastodon_oc[, c("lng", "lat", "early_age", "late_age")] <- numeric_info
 
 
 # check taxon name 
 ## all names in the column of species name
-table(mammoth_oc$taxon_name)
+table(mastodon_oc$taxon_name)
 
 ## “cf” basically means “I’m not sure, the preservation isn’t that great"
 ## exclude that one
-mammoth_oc <- mammoth_oc[mammoth_oc$taxon_name != "Mammut cf. americanum", ]
+mastodon_oc <- mastodon_oc[mastodon_oc$taxon_name != "Mammut cf. americanum", ]
 
 ## all other names are synonyms 
 ## change all to "Mammut_americanum"
-mammoth_oc$taxon_name <- "Mammut_americanum"
-table(mammoth_oc$taxon_name)
+mastodon_oc$taxon_name <- "Mammut_americanum"
+table(mastodon_oc$taxon_name)
 
 
 # simple plot to check the data using environmental layers and records
 ## limits for plot
-lims <- apply(mammoth_oc[, c("lng","lat")], 2, range)
+lims <- apply(mastodon_oc[, c("lng","lat")], 2, range)
 lims
 
 ## making limits a little wider
 lims <- lims * matrix(c(1.1, 0.9, 0.9, 1.1), nrow = 2)
 lims
 
-## raster layer 
-plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2], 
-     main = "All Mammoth Points") 
+## base map 
+map(xlim = lims[, 1], ylim = lims[, 2], fill = TRUE, col = "gray75")
 
 ## the records
-points(mammoth_oc[, c("lng","lat")], pch = 20, col = "black") 
+points(mastodon_oc[, c("lng","lat")], pch = 20, col = "black") 
 
+title(main = "All Mastodon Points")
+box()
 
 # split points into relevant time slices
 ## estimated age of records
-mammoth_oc$estimated_age <- (mammoth_oc$early_age + mammoth_oc$late_age) / 2
+mastodon_oc$estimated_age <- (mastodon_oc$early_age + mastodon_oc$late_age) / 2
 
 ## date ranges from paleoclim.org
 time_slices <- data.frame (maxTime = c(3.3, 3.205, .787, 0.130, 0.017, 0.0129, 
@@ -126,40 +134,45 @@ time_slices <- data.frame (maxTime = c(3.3, 3.205, .787, 0.130, 0.017, 0.0129,
 time_slices$meanAge <- (time_slices$maxTime + time_slices$minTime) / 2
 
 ## assign time slices to occurrences based on mean age
-for (i in 1:nrow(mammoth_oc)) {
-  time_diff <- abs(time_slices$meanAge - mammoth_oc[i, "estimated_age"])
-  mammoth_oc$time_index[i] <- which.min(time_diff)
-  mammoth_oc$time_slice[i] <- time_slices$meanAge[mammoth_oc$time_index[i]]
+for (i in 1:nrow(mastodon_oc)) {
+  time_diff <- abs(time_slices$meanAge - mastodon_oc[i, "estimated_age"])
+  mastodon_oc$time_index[i] <- which.min(time_diff)
+  mastodon_oc$time_slice[i] <- time_slices$meanAge[mastodon_oc$time_index[i]]
 }
 
 
 # plot to visualize data
 ## define colors
-indexes <- unique(mammoth_oc$time_index)
+indexes <- unique(mastodon_oc$time_index)
 ncolors <- length(indexes)
 col_pal <- colorRampPalette(c('red','yellow', 'blue'))
-mammoth_oc$col <- col_pal(ncolors)[as.factor(mammoth_oc$time_index)]
+mastodon_oc$col <- col_pal(ncolors)[as.factor(mastodon_oc$time_index)]
 
 ## plot with legend
-plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2],
-     main = "All Mammoth Points by Date", col = "#D6D5D5") 
-points(mammoth_oc[, c("lng","lat")], col = mammoth_oc$col, pch = 20)
+map(xlim = lims[, 1], ylim = lims[, 2], fill = TRUE, col = "gray75")
+points(mastodon_oc[, c("lng","lat")], col = mastodon_oc$col, pch = 20)
+
+title(main = "All Mastodon Points by Date")
 legend("bottomleft", title = "Date (My)", col = col_pal(ncolors), pch = 20,
        legend = time_slices$meanAge[sort(indexes)], bt = "n", cex = 0.8)
-
+box()
 
 # write data to directory
 fname_all <- "Occurrence_data/mammut_americanum_all.csv"
 if (!file.exists(fname_all)) {
-  write.csv(mammoth_oc, file = fname_all, row.names = FALSE)  
+  write.csv(mastodon_oc, file = fname_all, row.names = FALSE)  
 }
+
+
+# data split by time slices 
+mastodon_oc_split <- split(mastodon_oc, f = as.factor(mastodon_oc$time_slice))
 # ------------------------------------------------------------------------------
 
 
 # Downloading environmental data -----------------------------------------------
 # get data from paleoclim.org
 ## lets check how many records per time slice 
-table(mammoth_oc$time_slice)
+table(mastodon_oc$time_slice)
 
 ## relevant links (pleistocene_mis19 = 0.787 mya, pleistocene_hs1 = 0.01585 mya)
 ## check all data here http://www.paleoclim.org/
@@ -196,7 +209,8 @@ names(variables) <- names(periods) # name for variable sets
 sapply(variables, names)
 
 ## simple plot
-par(mfrow = c(2, 1))
+dev.off(); par(mfrow = c(2, 1))
+
 plot(variables$pleistocene_mis19$bio_1, 
      main = "Annual Mean Temperature (C * 10),\nPleistocene MIS, ca. 787 ka") 
 plot(variables$pleistocene_hs1$bio_1,
@@ -224,33 +238,34 @@ variables$pleistocene_hs1 <- variables$pleistocene_hs1[[vars_keep]]
 
 # region of interest for model calibration and niche comparisons
 ## area for model calibration (accessible area)
-cal_area <- concave_area(data = mammoth_oc, longitude = "lng",
+cal_area <- concave_area(data = mastodon_oc, longitude = "lng",
                          latitude = "lat", buffer_distance = 500)
 
 ## simple plot
+dev.off()
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Calibration area (acccessible area)")
-points(mammoth_oc[, 2:3], pch = 16, cex = 0.3)
+points(mastodon_oc[, 2:3], pch = 16, cex = 0.3)
 plot(cal_area, border = "blue", lwd = 2, add = TRUE)
 
 
 ## areas relevant for each time period (niche comparison areas)
-cal_area_787 <- concave_area(data = mammoth_oc_split$`0.787`, longitude = "lng",
+cal_area_787 <- concave_area(data = mastodon_oc_split$`0.787`, longitude = "lng",
                              latitude = "lat", buffer_distance = 500)
 
-cal_area_15 <- concave_area(data = mammoth_oc_split$`0.01585`, longitude = "lng",
+cal_area_15 <- concave_area(data = mastodon_oc_split$`0.01585`, longitude = "lng",
                             latitude = "lat", buffer_distance = 500)
 
 ## simple plots
 plot(variables$pleistocene_mis19$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Calibration area ~787 mya")
-points(mammoth_oc_split$`0.787`[, 2:3], pch = 16, cex = 0.3)
+points(mastodon_oc_split$`0.787`[, 2:3], pch = 16, cex = 0.3)
 plot(cal_area_787, border = "blue", lwd = 2, add = TRUE)
 
 
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Calibration area ~0.015 mya")
-points(mammoth_oc_split$`0.01585`[, 2:3], pch = 16, cex = 0.3)
+points(mastodon_oc_split$`0.01585`[, 2:3], pch = 16, cex = 0.3)
 plot(cal_area_15, border = "blue", lwd = 2, add = TRUE)
 
 
@@ -288,49 +303,46 @@ for (i in 1:length(vars_keep)) {
 
 
 # More data cleaning and spatial thinning --------------------------------------
-## data split by time slices 
-mammoth_oc_split <- split(mammoth_oc, f = as.factor(mammoth_oc$time_slice))
-
 # check records outside raster layers
 ## records 0.787 mya
 outside_mis19 <- which(is.na(extract(var_mis19[[1]], 
-                                     mammoth_oc_split$`0.787`[, 2:3])))
+                                     mastodon_oc_split$`0.787`[, 2:3])))
 
 outside_mis19 # all OK
 
 ## records 0.015 mya
 outside_hs1 <- which(is.na(extract(var_hs1[[1]], 
-                                     mammoth_oc_split$`0.01585`[, 2:3])))
+                                   mastodon_oc_split$`0.01585`[, 2:3])))
 
 outside_hs1 # one is outside
 
 ## checking weird record
 plot(variables$pleistocene_hs1$bio_1, xlim = lims[, 1], ylim = lims[, 2],
      main = "Records with no data")
-points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
+points(mastodon_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
 
 plot(variables$pleistocene_hs1$bio_1, xlim = c(-73, -72), ylim = c(39, 40),
      main = "Records with no data")
-points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
+points(mastodon_oc_split$`0.01585`[outside_hs1, 2:3], pch = 16, cex = 1)
 
 ## correcting manually that record (if many records are outside, the process
 ## will be longer, but see ellipsenm::to_closest())
-mammoth_oc_split$`0.01585`[outside_hs1, 2:3] <- c(-72.55, 39.55)
+mastodon_oc_split$`0.01585`[outside_hs1, 2:3] <- c(-72.55, 39.55)
 
 ## plotting point again to check
-points(mammoth_oc_split$`0.01585`[outside_hs1, 2:3], pch = 1, cex = 1)
+points(mastodon_oc_split$`0.01585`[outside_hs1, 2:3], pch = 1, cex = 1)
 
 
 # Spatial thinning (geographic rarefaction of records to reduce autocorrelation)
 ## records 0.787 mya
-thin(mammoth_oc_split$`0.787`, lat.col = "lat", 
+thin(mastodon_oc_split$`0.787`, lat.col = "lat", 
      long.col = "lng", spec.col = "taxon_name", 
      thin.par = 30, reps = 10, write.files = TRUE, 
      max.files = 1, out.dir = "Occurrence_data", 
      locs.thinned.list.return = FALSE, out.base = "oc_msi19")
 
 ## records 0.015 mya
-thin(mammoth_oc_split$`0.01585`, lat.col = "lat", 
+thin(mastodon_oc_split$`0.01585`, lat.col = "lat", 
      long.col = "lng", spec.col = "taxon_name", 
      thin.par = 30, reps = 10, write.files = TRUE, 
      max.files = 1, out.dir = "Occurrence_data", 
@@ -339,12 +351,12 @@ thin(mammoth_oc_split$`0.01585`, lat.col = "lat",
 
 # writing clean data
 ## all time slices before thinning
-for (i in 1:length(mammoth_oc_split)) {
-  slice <- names(mammoth_oc_split)[i]
+for (i in 1:length(mastodon_oc_split)) {
+  slice <- names(mastodon_oc_split)[i]
   fname <- paste0("Occurrence_data/mammut_americanum_", slice, "mya.csv")
   
   if (!file.exists(fname)) {
-    write.csv(mammoth_oc_split[[i]], file = fname, row.names = FALSE)
+    write.csv(mastodon_oc_split[[i]], file = fname, row.names = FALSE)
   }
 }
 # ------------------------------------------------------------------------------
