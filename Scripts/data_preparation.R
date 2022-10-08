@@ -347,7 +347,7 @@ thin(mastodon_oc_split$`0.787`, lat.col = "lat",
      locs.thinned.list.return = FALSE, out.base = "oc_msi19")
 
 ## records 0.015 mya
-set.seed(1)
+set.seed(3)
 thin(mastodon_oc_split$`0.01585`, lat.col = "lat", 
      long.col = "lng", spec.col = "taxon_name", 
      thin.par = 30, reps = 10, write.files = TRUE, 
