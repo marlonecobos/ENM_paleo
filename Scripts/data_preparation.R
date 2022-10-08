@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
-# Course: ECOLOGICAL MODELS APPLIED TO FOSIL DATA: DATA PREPARATION
+# Course: ECOLOGICAL MODELS APPLIED TO FOSSIL DATA: DATA PREPARATION
 # Author: Marlon E. Cobos, Hannah L. Owens
-# Date modified: 05/10/2022
+# Date modified: 07/10/2022
 # ------------------------------------------------------------------------------
 
 
@@ -294,10 +294,14 @@ rnames <- lapply(dirs, function (x) {
 
 ## writing layers in loop
 for (i in 1:length(vars_keep)) {
-  writeRaster(acces_mis19[[i]], filename = rnames[[1]][i], format = "GTiff")
-  writeRaster(acces_hs1[[i]], filename = rnames[[2]][i], format = "GTiff")
-  writeRaster(var_mis19[[i]], filename = rnames[[3]][i], format = "GTiff")
-  writeRaster(var_hs1[[i]], filename = rnames[[4]][i], format = "GTiff")
+  writeRaster(acces_mis19[[i]], filename = rnames[[1]][i], format = "GTiff", 
+              overwrite = TRUE)
+  writeRaster(acces_hs1[[i]], filename = rnames[[2]][i], format = "GTiff", 
+              overwrite = TRUE)
+  writeRaster(var_mis19[[i]], filename = rnames[[3]][i], format = "GTiff", 
+              overwrite = TRUE)
+  writeRaster(var_hs1[[i]], filename = rnames[[4]][i], format = "GTiff", 
+              overwrite = TRUE)
 }
 # ------------------------------------------------------------------------------
 
@@ -335,6 +339,7 @@ points(mastodon_oc_split$`0.01585`[outside_hs1, 2:3], pch = 1, cex = 1)
 
 # Spatial thinning (geographic rarefaction of records to reduce autocorrelation)
 ## records 0.787 mya
+set.seed(1)
 thin(mastodon_oc_split$`0.787`, lat.col = "lat", 
      long.col = "lng", spec.col = "taxon_name", 
      thin.par = 30, reps = 10, write.files = TRUE, 
@@ -342,6 +347,7 @@ thin(mastodon_oc_split$`0.787`, lat.col = "lat",
      locs.thinned.list.return = FALSE, out.base = "oc_msi19")
 
 ## records 0.015 mya
+set.seed(1)
 thin(mastodon_oc_split$`0.01585`, lat.col = "lat", 
      long.col = "lng", spec.col = "taxon_name", 
      thin.par = 30, reps = 10, write.files = TRUE, 
