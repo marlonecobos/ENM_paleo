@@ -16,7 +16,7 @@ This repository contains R scripts and materials to run examples for the 2022 Pa
 - ENM theory: **Erin Saupe** (University of Oxford)
 - Data collection: **Cori Myers** (University of New Mexico)
 - Algorithms, modeling, comparisons: **Hannah Owens** (Copenhagen University)
-- Algorithms, modeling, comparisons: **Marlon Cobos** (University of Kansas)
+- Algorithms, modeling, comparisons: **Marlon E. Cobos** (University of Kansas)
 - Model interpretation, MegaSDM: **Jenny McGuire** (Geogria Tech)
 
 <hr>
