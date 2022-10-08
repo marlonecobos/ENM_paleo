@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
-# Course: ECOLOGICAL MODELS APPLIED TO FOSIL DATA: MODEL EVALUATION
+# Course: ECOLOGICAL MODELS APPLIED TO FOSSIL DATA: MODEL EVALUATION
 # Author: Marlon E. Cobos, Hannah L. Owens
-# Date modified: 06/10/2022
+# Date modified: 07/10/2022
 # ------------------------------------------------------------------------------
 
 
@@ -32,6 +32,24 @@ library(kuenm)
 # ------------------------------------------------------------------------------
 
 
+# Working directory and sub-directories -----------------------------------------
+# working directory
+setwd("YOUR/DIRECTORY")
+
+## new sub-directories
+thres_dir <- "ENM/Thresholded"
+
+if (!dir.exists(thres_dir)) {
+  dir.create(thres_dir)
+}
+
+ieval_dir <- "ENM/Independent_evaluation"
+
+if (!dir.exists(ieval_dir)) {
+  dir.create(ieval_dir)
+}
+# ------------------------------------------------------------------------------
+
 
 # Variable importance (contribution to models) ---------------------------------
 # after model calibration we created a final model with selected parameter 
@@ -42,8 +60,10 @@ library(kuenm)
 var_imp <- model_var_contrib(fmod.dir = "ENM/Final_models", project = TRUE, 
                              ext.type = "E")
 
+var_imp
+
 # plot of variable contribution
-plot_contribution(contribution_list = var_imp$E$M_5_F_lqp_Set_4_E)
+plot_contribution(contribution_list = var_imp[[1]][[1]])
 # ------------------------------------------------------------------------------
 
 
@@ -57,8 +77,12 @@ plot_contribution(contribution_list = var_imp$E$M_5_F_lqp_Set_4_E)
 occ_hs1 <- read.csv("ENM/hs1_joint.csv")
 
 ## raster layers (median projections of replicated final model)
-mod_hs1 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_hs1_median.asc")
-mod_msi19 <- raster("ENM/Final_models/M_5_F_lqp_Set_4_E/Mammut_americanum_msi19_median.asc")
+mod_hs1 <- raster(list.files(path = "ENM/Final_models", 
+                             pattern = "hs1_median.asc", 
+                             recursive = TRUE, full.names = TRUE))
+mod_msi19 <- raster(list.files(path = "ENM/Final_models", 
+                               pattern = "msi19_median.asc", 
+                               recursive = TRUE, full.names = TRUE))
 
 ## suitability values in records
 occ_suit <- data.frame(occ_hs1, 
@@ -84,23 +108,15 @@ mod_hs1_e5 <- mod_hs1 >= e5_thres
 mod_msi9_e5 <- mod_msi19 >= e5_thres
 
 
-# write results
-## directory for results
-thres_dir <- "ENM/Thresholded"
-
-if (!dir.exists(thres_dir)) {
-  dir.create(thres_dir)
-}
-
-## write results as raster layers
+# write results as raster layers
 writeRaster(mod_hs1_mtp, filename = paste0(thres_dir, "/med_hs1_mtp.tif"), 
-            format = "GTiff")
+            format = "GTiff", overwrite = TRUE)
 writeRaster(mod_hs1_e5, filename = paste0(thres_dir, "/med_hs1_e5%.tif"), 
-            format = "GTiff")
+            format = "GTiff", overwrite = TRUE)
 writeRaster(mod_msi9_mtp, filename = paste0(thres_dir, "/med_msi9_mtp.tif"), 
-            format = "GTiff")
+            format = "GTiff", overwrite = TRUE)
 writeRaster(mod_msi9_e5, filename = paste0(thres_dir, "/med_msi9_e5%.tif"), 
-            format = "GTiff")
+            format = "GTiff", overwrite = TRUE)
 
 
 # simple plot of suitable areas
@@ -137,30 +153,32 @@ om_rates <- kuenm_omrat(model = mod_hs1, threshold = c(0, 5, 10),
 om_rates
 
 # fitting and complexity (using candidate models)
+## selected model (find it ENM/Calibration_results/selected_models.csv)
+sel_mod <- "M_0.1_F_lq_Set_4"
+
 ## model constructed with raw outputs
-raw_model_output <- read.csv("ENM/Candidate_models/M_5_F_lqp_Set_4_all/Mammut_americanum.csv")
+raw_mx <- paste0("ENM/Candidate_models/", sel_mod, "_all/Mammut_americanum.csv")
+raw_model_output <- read.csv(raw_mx)
 
 ## number of parameters in the model
-lambdas <- readLines("ENM/Candidate_models/M_5_F_lqp_Set_4_all/Mammut_americanum.lambdas")
+ld <- paste0("ENM/Candidate_models/", sel_mod, "_all/Mammut_americanum.lambdas")
+lambdas <- readLines(ld)
 npar <- n_par(x = lambdas)
 
 ## aicc calculation (we have this, just for practice, no test records needed)
 model_aicc <- aicc(occ = occ_hs1[, 2:3], prediction = raw_model_output,
                    npar = npar)
 
+model_aicc
+
 
 # write all results together
 ## all results
-all_eval <- data.frame(Model = "M_5_F_lqp_Set_4", 
+all_eval <- data.frame(Model = sel_mod, 
                        t(data.frame(p_roc$pROC_summary)), 
                        t(data.frame(om_rates)), model_aicc)
 
-## directory for results
-ieval_dir <- "ENM/Independent_evaluation"
-
-if (!dir.exists(ieval_dir)) {
-  dir.create(ieval_dir)
-}
+all_eval
 
 ## write all evaluation results
 evalname <- paste0(ieval_dir, "/evaluation_results.csv")
