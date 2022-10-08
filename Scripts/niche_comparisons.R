@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
-# Course: ECOLOGICAL MODELS APPLIED TO FOSIL DATA: NICHE COMPARISONS
+# Course: ECOLOGICAL MODELS APPLIED TO FOSSIL DATA: NICHE COMPARISONS
 # Author: Marlon E. Cobos, Hannah L. Owens
-# Date modified: 05/10/2022
+# Date modified: 07/10/2022
 # ------------------------------------------------------------------------------
 
 
@@ -28,7 +28,29 @@
 
 library(raster)
 library(ellipsenm)
+library(kuenm)
 # ------------------------------------------------------------------------------
+
+
+
+# Working directory and sub-directories -----------------------------------------
+# working directory
+setwd("YOUR/DIRECTORY")
+
+## new sub-directories
+thres_dir <- "ENM/Thresholded"
+
+if (!dir.exists(thres_dir)) {
+  dir.create(thres_dir)
+}
+
+over_dir <- "Niche_comparison"
+
+if (!dir.exists(over_dir)) {
+  dir.create(over_dir)
+}
+# ------------------------------------------------------------------------------
+
 
 
 # Extent of suitable habitat in projections ------------------------------------
@@ -76,21 +98,14 @@ area_msi9_e5 <- sum(area_msi9_e5[][mod_msi9_e5_suit[] == 1], na.rm = TRUE)
 
 
 # write results
-## directory for results
-thres_dir <- "ENM/Thresholded"
-
-if (!dir.exists(thres_dir)) {
-  dir.create(thres_dir)
-}
-
-## write raster layers
-writeRaster(mod_hs1_mtp_suit, format = "GTiff",
+# write raster layers
+writeRaster(mod_hs1_mtp_suit, format = "GTiff", overwrite = TRUE,
             filename = paste0(thres_dir, "/med_hs1_mtp_suitable.tif"))
-writeRaster(mod_hs1_e5_suit, format = "GTiff",
+writeRaster(mod_hs1_e5_suit, format = "GTiff", overwrite = TRUE,
             filename = paste0(thres_dir, "/med_hs1_e5%_suitable.tif"))
-writeRaster(mod_msi9_mtp_suit, format = "GTiff",
+writeRaster(mod_msi9_mtp_suit, format = "GTiff", overwrite = TRUE,
             filename = paste0(thres_dir, "/med_msi9_mtp_suitable.tif"))
-writeRaster(mod_msi9_e5_suit, format = "GTiff",
+writeRaster(mod_msi9_e5_suit, format = "GTiff", overwrite = TRUE,
             filename = paste0(thres_dir, "/med_msi9_e5%_suitable.tif"))
 
 ## table with areas
@@ -98,6 +113,8 @@ areas <- data.frame(HS1_mtp_area_km2 = area_hs1_mtp,
                     MIS_mtp_area_km2 = area_msi9_mtp,
                     HS1_e5_area_km2 = area_hs1_e5, 
                     MIS_e5_area_km2 = area_msi9_e5)
+
+areas
 
 a_name <- "ENM/Thresholded/Suitable_area_km2.csv"
 
@@ -149,22 +166,26 @@ or_e5 <- sum(suitable_e5 == 0) / length(suitable_e5)
 
 
 # write results
-## directory for results
-over_dir <- "Niche_comparison"
-
-if (!dir.exists(over_dir)) {
-  dir.create(over_dir)
-}
-
 ## write omission rates
 ors <- data.frame(Total_records_MIS = nrow(oc_msi19), 
                   Omission_rate_mtp = or_mtp, Omission_rate_e5 = or_e5)
+
+ors
 
 or_name <- paste0(over_dir, "/MIS_omitted_in_predictions_from_HS1.csv")
 
 if (!file.exists(or_name)) {
   write.csv(ors, or_name, row.names = FALSE)
 }
+
+
+# simple plot of suitable areas and records 
+par(mfrow = c(1, 2))
+
+plot(mod_msi9_mtp_suit, main = "Records and suitable areas (MTP)\nMIS (ca. 787 ka)")
+points(oc_msi19[, 2:3], pch = 1, cex = 0.6)
+plot(mod_msi9_e5_suit, main = "Records and suitable areas (5%)\nMIS (ca. 787 ka")
+points(oc_msi19[, 2:3], pch = 1, cex = 0.6)
 # ------------------------------------------------------------------------------
 
 
@@ -176,10 +197,23 @@ oc_msi19 <- read.csv("Occurrence_data/oc_msi19_thin1.csv")
 oc_hs1 <- read.csv("Occurrence_data/oc_hs1_thin1.csv")
 
 ## raster layers masked to calibration areas representative of each period
-pc_msi19 <- stack(list.files("Environmental_data/PCA/Projected_PCs", 
+mc_msi19 <- stack(list.files("Environmental_data/relevant_area_mis19", 
                              pattern = ".tif$", full.names = TRUE))
-pc_hs1 <- stack(list.files("Environmental_data/PCA/Initial", 
+mc_hs1 <- stack(list.files("Environmental_data/relevant_area_hs1", 
                            pattern = ".tif$", full.names = TRUE))
+
+
+# reducing environmental dimensions using PCA
+# the overall variance of all variables is explained with fewer variables
+# PCs for msi19 are created using the loadings from the PCA created with hs1
+pcs_rel <- kuenm_rpca(variables = mc_hs1, var.scale = TRUE, project = TRUE, 
+                      proj.vars = mc_msi19, write.result = TRUE, n.pcs = 3,
+                      out.format = "GTiff", 
+                      out.dir = "Environmental_data/PCA_relevant_area")
+
+pc_msi19 <- pcs_rel$PCRasters_Projected_PCs
+pc_hs1 <- pcs_rel$PCRasters_initial
+
 
 # preparing data
 ## records with environmental data
@@ -236,6 +270,6 @@ plot_overlap(overlap_sig)
 par(mfrow = c(1, 1))
 plot_overlap_sig(overlap_sig, 
                  main = "Overlap analysis\nSignificance test results")
-legend(x = 0.22, y = 14, legend = c("Observed", "5% CL"), lty = c(1, 2), lwd = 2, 
+legend(x = 0.30, y = 8, legend = c("Observed", "5% CL"), lty = c(1, 2), lwd = 2, 
        col = c("blue", "darkgreen"), bty = "n")
 # ------------------------------------------------------------------------------
