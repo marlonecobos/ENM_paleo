@@ -259,13 +259,13 @@ kuenm_mop_msi19 <- raster(paste0("ENM/MOP_results/", setsel,
 ## dissimilarity results
 par(mfrow = c(2, 3))
 
-plot(novel_msi19, main = "MESS\nMIS (ca. 787 ka)")
-plot(1 - kuenm_mop_msi19, main = "kuenm MOP\nMIS (ca. 787 ka)")
-plot(mop_msi19$mop_basic, main = "New MOP\nMIS (ca. 787 ka)")
+plot(novel_msi19, main = "MESS\nMIS (ca. 787 ka)") # similarity
+plot(1 - kuenm_mop_msi19, main = "kuenm MOP\nMIS (ca. 787 ka)") # dissimilarity
+plot(mop_msi19$mop_basic, main = "New MOP\nMIS (ca. 787 ka)") # dissimilarity
 
-plot(novel_hs1, main = "HS 1 (17.0-14.7 ka)")
-plot(1 - kuenm_mop_hs1, main = "HS 1 (17.0-14.7 ka)")
-plot(mop_hs1$mop_basic, main = "HS 1 (17.0-14.7 ka)")
+plot(novel_hs1, main = "HS 1 (17.0-14.7 ka)") # similarit
+plot(1 - kuenm_mop_hs1, main = "HS 1 (17.0-14.7 ka)") # dissimilarity
+plot(mop_hs1$mop_basic, main = "HS 1 (17.0-14.7 ka)") # dissimilarity
 
 ## novel conditions
 par(mfrow = c(2, 3))
