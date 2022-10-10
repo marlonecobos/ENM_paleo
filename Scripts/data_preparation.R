@@ -116,7 +116,7 @@ lims
 map(xlim = lims[, 1], ylim = lims[, 2], fill = TRUE, col = "gray75")
 
 ## the records
-points(mastodon_oc[, c("lng","lat")], pch = 20, col = "black") 
+points(mastodon_oc[, c("lng","lat")], pch = 20, col = "black", cex = 0.5) 
 
 title(main = "All Mastodon Points")
 box()
