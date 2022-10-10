@@ -154,7 +154,7 @@ om_rates
 
 # fitting and complexity (using candidate models)
 ## selected model (find it ENM/Calibration_results/selected_models.csv)
-sel_mod <- "M_0.1_F_lq_Set_4"
+sel_mod <- "M_0.1_F_lqp_Set_4"
 
 ## model constructed with raw outputs
 raw_mx <- paste0("ENM/Candidate_models/", sel_mod, "_all/Mammut_americanum.csv")
